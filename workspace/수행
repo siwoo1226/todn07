@@ -1,0 +1,55 @@
+import requests
+from bs4 import BeautifulSoup
+
+# 할 일 목록을 저장할 리스트
+todo_list = []
+
+# 할 일 추가 함수
+def add_todo():
+    todo_item = input("추가할 할 일을 입력하세요: ")
+    todo_list.append(todo_item)
+    print("할 일이 추가되었습니다.")
+
+# 할 일 삭제 함수
+def delete_todo():
+    print("현재 할 일 목록:")
+    for index, item in enumerate(todo_list):
+        print(f"{index + 1}. {item}")
+    
+    try:
+        index_to_delete = int(input("삭제할 할 일의 번호를 입력하세요: ")) - 1
+        if 0 <= index_to_delete < len(todo_list):
+            del todo_list[index_to_delete]
+            print("할 일이 삭제되었습니다.")
+        else:
+            print("유효하지 않은 번호입니다.")
+    except ValueError:
+        print("숫자를 입력하세요.")
+
+# 할 일 목록 출력 함수
+def view_todo():
+    print("현재 할 일 목록:")
+    for index, item in enumerate(todo_list, start=1):
+        print(f"{index}. {item}")
+
+# 사용자에게 선택지 제공
+while True:
+    print("\n===== ToDo 리스트 관리 프로그램 =====")
+    print("1. 할 일 추가")
+    print("2. 할 일 삭제")
+    print("3. 할 일 보기")
+    print("4. 종료")
+    
+    choice = input("원하는 작업을 선택하세요 (1/2/3/4): ")
+    
+    if choice == '1':
+        add_todo()
+    elif choice == '2':
+        delete_todo()
+    elif choice == '3':
+        view_todo()
+    elif choice == '4':
+        print("프로그램을 종료합니다.")
+        break
+    else:
+        print("유효하지 않은 선택입니다. 다시 입력하세요.")

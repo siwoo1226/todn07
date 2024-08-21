@@ -1,0 +1,274 @@
+import pygame
+import sys
+import random
+
+# Pygame 초기화
+pygame.init()
+
+# 화면 설정
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("냥코대도둑 게임")
+
+# 색깔 정의
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GRAY = (150, 150, 150)
+
+# 게임 관련 변수
+score = 0
+time_limit = 30  # 게임 시간 (초)
+current_time = 0
+item_spawn_interval = 1500  # 아이템 생성 간격 (밀리초)
+last_item_spawn_time = 0
+
+# 폰트 설정
+font = pygame.font.Font(None, 36)
+
+# 고양이 클래스
+class Cat(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load('cat.png.png').convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.center = (screen_width // 2, screen_height // 2)
+        self.speed = 5
+
+    def update(self):
+        # 플레이어 이동
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            self.rect.x -= self.speed
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += self.speed
+        if keys[pygame.K_UP]:
+            self.rect.y -= self.speed
+        if keys[pygame.K_DOWN]:
+            self.rect.y += self.speed
+
+        # 화면 밖으로 나가지 않도록 제한
+        if self.rect.left < 0:
+            self.rect.left = 0
+        elif self.rect.right > screen_width:
+            self.rect.right = screen_width
+        if self.rect.top < 0:
+            self.rect.top = 0
+        elif self.rect.bottom > screen_height:
+            self.rect.bottom = screen_height
+
+# 아이템 클래스
+class Item(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load('can.png').convert_alpha()  # 이미지 파일은 'item.png'로 가정
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randint(50, screen_width - 50)
+        self.rect.y = random.randint(50, screen_height - 50)
+
+    def update(self):
+        pass
+
+# 게임 초기화
+all_sprites = pygame.sprite.Group()
+items = pygame.sprite.Group()
+
+cat = Cat()
+all_sprites.add(cat)
+
+# 초기 아이템 생성
+for i in range(10):
+    item = Item()
+    all_sprites.add(item)
+    items.add(item)
+
+# 게임 루프
+running = True
+start_time = pygame.time.get_ticks()
+
+while running:
+    # 이벤트 처리
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # 게임 시간 계산
+    current_time = (pygame.time.get_ticks() - start_time) // 1000
+
+    # 아이템 생성
+    if pygame.time.get_ticks() - last_item_spawn_time > item_spawn_interval:
+        item = Item()
+        all_sprites.add(item)
+        items.add(item)
+        last_item_spawn_time = pygame.time.get_ticks()
+
+    # 게임 로직 업데이트
+    all_sprites.update()
+
+    # 고양이와 아이템 충돌 체크
+    hits = pygame.sprite.spritecollide(cat, items, True)
+    for hit in hits:
+        score += 10
+
+    # 화면 업데이트
+    screen.fill(WHITE)
+    all_sprites.draw(screen)
+
+    # 게임 시간과 점수 표시
+    timer_text = font.render(f"Time: {time_limit - current_time}", True, BLACK)
+    score_text = font.render(f"Score: {score}", True, BLACK)
+    screen.blit(timer_text, (10, 10))
+    screen.blit(score_text, (10, 50))
+
+    # 시간이 다 되면 게임 종료
+    if current_time >= time_limit:
+        running = False
+        end_text = font.render("Game Over!", True, RED)
+        screen.blit(end_text, (screen_width // 2 - 100, screen_height // 2))
+
+    pygame.display.flip()
+
+    # 프레임 설정
+    pygame.time.Clock().tick(60)
+
+# Pygame 종료
+pygame.quit()
+sys.exit()
+import pygame
+import sys
+import random
+
+# Pygame 초기화
+pygame.init()
+
+# 화면 설정
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("냥코대도둑 게임")
+
+# 색깔 정의
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GRAY = (150, 150, 150)
+
+# 게임 관련 변수
+score = 0
+time_limit = 30  # 게임 시간 (초)
+current_time = 0
+item_spawn_interval = 1500  # 아이템 생성 간격 (밀리초)
+last_item_spawn_time = 0
+
+# 폰트 설정
+font = pygame.font.Font(None, 36)
+
+# 고양이 클래스
+class Cat(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load('cat.png').convert_alpha()  # 이미지 파일은 'cat.png'로 가정
+        self.rect = self.image.get_rect()
+        self.rect.center = (screen_width // 2, screen_height // 2)
+        self.speed = 5
+
+    def update(self):
+        # 플레이어 이동
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            self.rect.x -= self.speed
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += self.speed
+        if keys[pygame.K_UP]:
+            self.rect.y -= self.speed
+        if keys[pygame.K_DOWN]:
+            self.rect.y += self.speed
+
+        # 화면 밖으로 나가지 않도록 제한
+        if self.rect.left < 0:
+            self.rect.left = 0
+        elif self.rect.right > screen_width:
+            self.rect.right = screen_width
+        if self.rect.top < 0:
+            self.rect.top = 0
+        elif self.rect.bottom > screen_height:
+            self.rect.bottom = screen_height
+
+# 아이템 클래스
+class Item(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.image.load('item.png').convert_alpha()  # 이미지 파일은 'item.png'로 가정
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randint(50, screen_width - 50)
+        self.rect.y = random.randint(50, screen_height - 50)
+
+    def update(self):
+        pass
+
+# 게임 초기화
+all_sprites = pygame.sprite.Group()
+items = pygame.sprite.Group()
+
+cat = Cat()
+all_sprites.add(cat)
+
+# 초기 아이템 생성
+for i in range(10):
+    item = Item()
+    all_sprites.add(item)
+    items.add(item)
+
+# 게임 루프
+running = True
+start_time = pygame.time.get_ticks()
+
+while running:
+    # 이벤트 처리
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # 게임 시간 계산
+    current_time = (pygame.time.get_ticks() - start_time) // 1000
+
+    # 아이템 생성
+    if pygame.time.get_ticks() - last_item_spawn_time > item_spawn_interval:
+        item = Item()
+        all_sprites.add(item)
+        items.add(item)
+        last_item_spawn_time = pygame.time.get_ticks()
+
+    # 게임 로직 업데이트
+    all_sprites.update()
+
+    # 고양이와 아이템 충돌 체크
+    hits = pygame.sprite.spritecollide(cat, items, True)
+    for hit in hits:
+        score += 10
+
+    # 화면 업데이트
+    screen.fill(WHITE)
+    all_sprites.draw(screen)
+
+    # 게임 시간과 점수 표시
+    timer_text = font.render(f"Time: {time_limit - current_time}", True, BLACK)
+    score_text = font.render(f"Score: {score}", True, BLACK)
+    screen.blit(timer_text, (10, 10))
+    screen.blit(score_text, (10, 50))
+
+    # 시간이 다 되면 게임 종료
+    if current_time >= time_limit:
+        running = False
+        end_text = font.render("Game Over!", True, RED)
+        screen.blit(end_text, (screen_width // 2 - 100, screen_height // 2))
+
+    pygame.display.flip()
+
+    # 프레임 설정
+    pygame.time.Clock().tick(60)
+
+# Pygame 종료
+pygame.quit()
+sys.exit()

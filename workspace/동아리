@@ -1,0 +1,169 @@
+import pygame
+import sys
+import random
+
+# pygame 초기화
+pygame.init()
+
+# 화면 설정
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("슈팅 게임")
+
+# 색깔 정의
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+
+# 게임 관련 변수
+score = 0
+level = 1
+enemy_speed = 1  # 초기 적의 속도
+
+# 폰트 설정
+font = pygame.font.Font(None, 36)
+
+# 플레이어 클래스
+class Player(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((50, 50))
+        self.image.fill(RED)
+        self.rect = self.image.get_rect()
+        self.rect.center = (screen_width // 2, screen_height - 50)
+        self.speed = 5
+
+    def update(self):
+        # 플레이어 이동
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_LEFT]:
+            self.rect.x -= self.speed
+        if keys[pygame.K_RIGHT]:
+            self.rect.x += self.speed
+
+        # 화면 밖으로 나가지 않도록 제한
+        if self.rect.left < 0:
+            self.rect.left = 0
+        elif self.rect.right > screen_width:
+            self.rect.right = screen_width
+
+    def shoot(self):
+        bullet = Bullet(self.rect.centerx, self.rect.top)
+        all_sprites.add(bullet)
+        bullets.add(bullet)
+
+# 총알 클래스
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.image = pygame.Surface((5, 10))
+        self.image.fill(WHITE)
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        self.speed = -10
+
+    def update(self):
+        self.rect.y += self.speed
+        # 화면을 벗어나면 제거
+        if self.rect.bottom < 0:
+            self.kill()
+
+# 적 클래스
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image = pygame.Surface((30, 30))
+        self.image.fill(RED)
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(screen_width - self.rect.width)
+        self.rect.y = random.randrange(-100, -40)
+        self.speed_y = enemy_speed  # 초기 속도 설정
+
+    def update(self):
+        global score, level, enemy_speed
+
+        self.rect.y += self.speed_y
+        if self.rect.top > screen_height + 10:
+            self.rect.x = random.randrange(screen_width - self.rect.width)
+            self.rect.y = random.randrange(-100, -40)
+            self.speed_y = enemy_speed
+
+            # 점수 증가 및 레벨 업
+            score += 10
+            if score % 100 == 0:
+                level += 1
+                enemy_speed += 1  # 레벨 업에 따른 적 속도 증가
+
+# 게임 초기화
+all_sprites = pygame.sprite.Group()
+enemies = pygame.sprite.Group()
+bullets = pygame.sprite.Group()
+
+player = Player()
+all_sprites.add(player)
+
+# 처음부터 적 생성
+for i in range(8):
+    enemy = Enemy()
+    all_sprites.add(enemy)
+    enemies.add(enemy)
+
+# 게임 루프
+running = True
+start_time = pygame.time.get_ticks()  # 게임 시작 시간
+enemy_spawn_time = 3000  # 적 생성 간격 (밀리초)
+last_enemy_spawn = 0
+
+while running:
+    # 이벤트 처리
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                player.shoot()
+
+    # 게임 시간 계산
+    current_time = pygame.time.get_ticks()
+    elapsed_time = (current_time - start_time) / 1000  # 초 단위로 변환
+
+    # 적 생성
+    if current_time - last_enemy_spawn > enemy_spawn_time:
+        enemy = Enemy()
+        all_sprites.add(enemy)
+        enemies.add(enemy)
+        last_enemy_spawn = current_time
+
+    # 게임 로직 업데이트
+    all_sprites.update()
+
+    # 총알과 적 충돌 체크
+    hits = pygame.sprite.groupcollide(enemies, bullets, True, True)
+    for hit_enemy in hits:
+        enemy = Enemy()
+        all_sprites.add(enemy)
+        enemies.add(enemy)
+
+    # 플레이어와 적 충돌 체크
+    if pygame.sprite.spritecollide(player, enemies, False):
+        running = False
+
+    # 화면 업데이트
+    screen.fill(BLACK)
+    all_sprites.draw(screen)
+
+    # 점수와 레벨 표시
+    score_text = font.render(f"Score: {score}", True, WHITE)
+    level_text = font.render(f"Level: {level}", True, WHITE)
+    screen.blit(score_text, (10, 10))
+    screen.blit(level_text, (10, 50))
+
+    pygame.display.flip()
+
+    # 프레임 설정
+    pygame.time.Clock().tick(60)
+
+# 게임 종료
+pygame.quit()
+sys.exit()
